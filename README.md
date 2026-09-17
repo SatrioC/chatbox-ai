@@ -1,50 +1,49 @@
-# Game Assistant AI (Groq API)
+# Game Assistant AI (Gemini API)
 
-Chatbox AI yang fokus sebagai **asisten seputar game**: strategi, walkthrough, rekomendasi build,
-rekomendasi game, tips optimasi, dsb. Dibuat dengan Flask + Groq API (model `openai/gpt-oss-120b`),
-respons streaming, dan riwayat percakapan per sesi.
+Chatbox AI yang fokus sebagai **asisten khusus seputar video game**: strategi, walkthrough, rekomendasi build, rekomendasi game, lore cerita, tips optimasi FPS, dan meta game terkini. 
 
-Asisten ini akan menolak pertanyaan di luar topik game dan mengarahkan kembali ke topik game.
+Dibuat menggunakan **Flask** + **Google GenAI SDK** (Gemini), respons streaming real-time, riwayat percakapan dinamis (multi-turn), dan proteksi ketat (prompt guardrails) agar AI hanya melayani topik game.
+
+## Fitur
+- **100% Fokus Game**: AI otomatis menolak topik di luar game dengan gaya gamer santai.
+- **Multi-turn Memory**: Mengingat riwayat percakapan dalam sesi chat.
+- **Streaming Response**: Jawaban muncul secara real-time token demi token.
+- **Konfigurasi Aman**: Menggunakan file `.env` yang diabaikan oleh git (`.gitignore`).
 
 ## Struktur
 ```
 chatbox-ai/
-├── app.py               # Backend Flask + integrasi Groq
+├── app.py               # Backend Flask + integrasi Google GenAI
 ├── requirements.txt     # Dependency Python
+├── .env                 # API Key Gemini & konfigurasi
+├── .gitignore           # Menjaga file sensitif dari git
 ├── templates/
-│   └── index.html       # Tampilan chat
+│   └── index.html       # Tampilan antarmuka chat
 └── static/
-    └── style.css         # Styling
+    └── style.css        # Tema & gaya tampilan game
 ```
 
 ## Cara Menjalankan
 
-1. Buat virtual environment (opsional tapi disarankan)
-   ```bash
-   python -m venv venv
-   source venv/bin/activate   # Windows: venv\Scripts\activate
-   ```
-
-2. Install dependency
+1. Install dependency:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Set API key Groq kamu sebagai environment variable
-   ```bash
-   export GROQ_API_KEY="your_api_key_here"   # Windows: set GROQ_API_KEY=your_api_key_here
+2. Konfigurasi file `.env`:
+   Pastikan file `.env` sudah terisi API key kamu:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-3.5-flash-lite
+   FLASK_SECRET_KEY=secret-key-acak
    ```
-   Dapatkan API key di https://console.groq.com/keys
 
-4. Jalankan aplikasi
+3. Jalankan aplikasi:
    ```bash
    python app.py
    ```
 
-5. Buka browser ke `http://127.0.0.1:5000`
+4. Buka browser ke:
+   `http://127.0.0.1:5000`
 
-## Catatan
-- Respons AI di-stream secara real-time (token demi token) ke halaman chat.
-- Model yang digunakan: `openai/gpt-oss-120b`. Bisa diganti di `app.py` variabel `MODEL`.
-- Ini contoh dasar tanpa riwayat percakapan (setiap pesan dikirim independen). Bisa dikembangkan lebih lanjut sesuai kebutuhan.
 "# chatbox-ai" 
