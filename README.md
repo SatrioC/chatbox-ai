@@ -71,68 +71,26 @@ chatbox-ai/
 
 ---
 
-## Panduan Instalasi & Menjalankan
+## Cara Menjalankan
 
-### 1. Clone Repository
-```bash
-git clone https://github.com/SatrioC/chatbox-ai.git
-cd chatbox-ai
-```
+1. Install dependency:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 2. Buat & Aktifkan Virtual Environment (venv)
-Gunakan virtual environment agar dependensi Python terisolasi dan tidak bentrok dengan paket global sistem:
+2. Buat dan Konfigurasi file `.env`:
+   Isi file dengan 3 baris kode dibawah dan pastikan file `.env` sudah terisi API key kamu:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-3.5-flash-lite
+   FLASK_SECRET_KEY=secret-key-acak
+   ```
 
-- **Windows (Command Prompt / PowerShell):**
-  ```powershell
-  python -m venv venv
-  .\venv\Scripts\activate
-  ```
-- **macOS / Linux:**
-  ```bash
-  python3 -m venv venv
-  source venv/bin/activate
-  ```
+3. Jalankan aplikasi:
+   ```bash
+   python app.py
+   ```
 
-*(Setelah aktif, terminal akan menampilkan tanda `(venv)` di awal baris).*
+4. Buka browser ke:
+   `http://127.0.0.1:5000`
 
-### 3. Install Dependensi
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Konfigurasi Environment Variable (`.env`)
-Aplikasi membutuhkan Gemini API Key dari [Google AI Studio](https://aistudio.google.com/).
-
-Salin file `.env.example` menjadi `.env`:
-- **Windows (PowerShell):**
-  ```powershell
-  Copy-Item .env.example .env
-  ```
-- **Command Prompt:**
-  ```cmd
-  copy .env.example .env
-  ```
-- **macOS / Linux:**
-  ```bash
-  cp .env.example .env
-  ```
-
-Buka file `.env` dan masukkan API Key Anda:
-```env
-GEMINI_API_KEY=masukkan_api_key_gemini_anda_disini
-GEMINI_MODEL=gemini-3.5-flash-lite
-FLASK_SECRET_KEY=game-assistant-secret-key-2026
-```
-
-> [!IMPORTANT]
-> File `.env` berisi kunci rahasia dan sudah otomatis tercantum di dalam `.gitignore`, sehingga aman dan tidak akan terunggah ke repositori GitHub.
-
-### 5. Jalankan Aplikasi
-```bash
-python app.py
-```
-
-Buka peramban (browser) dan akses:
-```
-http://127.0.0.1:5000
-```
