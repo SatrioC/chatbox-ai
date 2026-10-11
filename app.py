@@ -1,4 +1,6 @@
-import os
+import os 
+import re  
+import requests
 from dotenv import load_dotenv
 from flask import Flask, request, Response, render_template, stream_with_context, session
 from google import genai
@@ -83,6 +85,51 @@ def reset():
     session.clear()
     return {"status": "ok"}
 
+UPDATE_KEYWORDS = [
+    "terbaru", "terkini", "terupdate", "update", "patch", "season", "musim",
+    "meta", "tier list", "nerf", "buff", "rilis", "release", "jadwal",
+    "event", "banner", "gacha", "rerun", "leak", "bocoran", "trailer",
+    "berita", "news", "sekarang", "saat ini", "hari ini", "minggu ini",
+    "bulan ini", "tahun ini", "harga", "diskon", "promo", "turnamen",
+]
+UPDATE_PATTERN = re.compile(
+    r"\b(" + "|".join(re.escape(k) for k in UPDATE_KEYWORDS) + r")(nya|kah|lah)?\b",
+    re.IGNORECASE,
+)
+
+
+def needs_search(message, previous_user_msgs):
+    """True hanya jika pertanyaan menyangkut informasi yang sifatnya update."""
+    if not message or len(message) < 8:
+        return False
+    if UPDATE_PATTERN.search(message):
+        return True
+    if len(message) < 40 and previous_user_msgs:
+        return bool(UPDATE_PATTERN.search(previous_user_msgs[-1]))
+    return False
+
+
+def search_context(question):
+    """Cari info terbaru lewat Tavily, kembalikan cuplikannya sebagai teks."""
+    api_key = os.environ.get("TAVILY_API_KEY")
+    if not api_key:
+        return ""
+    try:
+        resp = requests.post(
+            "https://api.tavily.com/search",
+            headers={"Authorization": f"Bearer {api_key}"},
+            json={"query": question, "max_results": 5, "search_depth": "basic"},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        results = resp.json().get("results", [])
+        return "\n".join(
+            f"- {r.get('title', '')}: {r.get('content', '')} ({r.get('url', '')})"
+            for r in results
+        )
+    except Exception as e:
+        print("Search error:", e)
+        return ""
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -113,9 +160,38 @@ def chat():
 
     contents = build_contents(history, attached_file=attached_file)
 
+    prev_user = [m["content"] for m in history[:-1] if m["role"] == "user" and m.get("content")]
+
+    use_search = needs_search(user_message, prev_user)
+    
+    info = ""
+    if use_search:
+        query = user_message if len(user_message) >= 40 or not prev_user else f"{prev_user[-1]} {user_message}"
+        info = search_context(query)
+    print(f"[DEBUG] use_search={use_search}, panjang hasil={len(info)}")
+
+    system = SYSTEM_PROMPT
+    if info:
+        system += (
+            "\n\nINFO TERBARU DARI PENCARIAN WEB (gunakan bila relevan, "
+            "jangan mengarang di luar ini untuk hal yang sifatnya terbaru):\n" + info
+        )
+        system += (
+        "\n\nKONSISTENSI: Jika jawabanmu sebelumnya di percakapan ini memakai info "
+        "terbaru dari pencarian, anggap itu benar. Jangan membantahnya dengan "
+        "pengetahuan lamamu."
+        )
+    elif use_search:
+        system += (
+            "\n\nCATATAN: Pencarian web sedang tidak tersedia. Untuk pertanyaan soal "
+            "versi, patch, event, atau karakter terbaru, jangan menyebut versi atau "
+            "nama tertentu seolah pasti. Katakan datamu mungkin sudah kedaluwarsa "
+            "dan sarankan cek sumber resmi."
+        )
+
     config = types.GenerateContentConfig(
-        system_instruction=SYSTEM_PROMPT,
-        temperature=0.7,
+    system_instruction=system,          # <- pakai system
+    temperature=0.7,
     )
 
     def generate():
