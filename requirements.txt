@@ -1,2 +1,4 @@
 flask
-groq
+google-genai
+python-dotenv
+requests
